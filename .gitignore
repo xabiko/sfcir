@@ -12,3 +12,4 @@ sfcir
 .vscode/
 .grifter/
 .env
+actions/secrets.go

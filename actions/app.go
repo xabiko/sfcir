@@ -11,6 +11,8 @@ import (
 	"github.com/gobuffalo/buffalo/middleware/i18n"
 	"github.com/gobuffalo/packr"
 	"github.com/xabiko/sfcir/models"
+
+	"github.com/gorilla/sessions"
 )
 
 // ENV is used to help switch settings based on where the
@@ -24,10 +26,16 @@ var T *i18n.Translator
 // application.
 func App() *buffalo.App {
 	if app == nil {
+
+		var store = sessions.NewCookieStore([]byte(session_secret))
+		store.Options.MaxAge = 7000
+
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
-			SessionName: "_sfcir_session",
+			SessionName: "_webtest_session",
+			SessionStore: store,
 		})
+
 		// Automatically redirect to SSL
 		app.Use(ssl.ForceSSL(secure.Options{
 			SSLRedirect:     ENV == "production",
@@ -55,6 +63,7 @@ func App() *buffalo.App {
 		app.Use(T.Middleware())
 
 		app.GET("/", HomeHandler)
+		app.GET("/dashboard", AuthHandler)
 
 		app.ServeFiles("/assets", assetsBox)
 	}

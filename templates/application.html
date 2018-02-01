@@ -1,20 +1,123 @@
-<!DOCTYPE html>
 <html>
+
   <head>
+
     <meta charset="utf-8">
-    <title>Buffalo - Sfcir</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <title>Buffalo - Webtest</title>
     <%= stylesheetTag("application.css") %>
+
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="<%= authenticity_token %>" />
-    <link rel="icon" href="<%= assetPath("images/favicon.ico") %>">
+
+    <link href="https://js.arcgis.com/4.6/esri/css/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Bungee" rel="stylesheet">
+    <!-- <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet"> -->
+
   </head>
+
   <body>
 
-    <div class="container">
-      <%= partial("flash.html") %>
-      <%= yield %>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <div class="pull-left">
+            <i style="color:#9e9e9e" class="fa fa-globe fa-4x" aria-hidden="true">&nbsp;</i>
+          </div>
+          <a class="navbar-brand" href="#">Santa Fe CIR</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+        </div>
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Median Household Income</h1>
+          <%= yield %>
+        </div>
+      </div>
     </div>
 
     <%= javascriptTag("application.js") %>
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFgQ8x_dFu4QagzAyJ5JOluHiGvu-R3gc&callback=initMap" async defer></script> -->
+    <script src="https://js.arcgis.com/4.6/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/TileLayer",
+        "dojo/dom",  // require dojo/dom for getting the DOM element
+        "dojo/on",   // require dojo/on for listening to events on the DOM
+        "dojo/domReady!"
+      ], function(Map, MapView, TileLayer, dom, on) {
+
+        var incomeLyr = new TileLayer({
+          url: "http://server.arcgisonline.com/ArcGIS/rest/services/Demographics/USA_Median_Household_Income/MapServer",
+          id: "medians",
+          opacity: 0.7
+        });
+
+        var map = new Map({
+          basemap: "streets",
+          layers: [incomeLyr]
+        });
+
+        var view = new MapView({
+          container: "viewDiv",  // Reference to the scene div created in step 5
+          map: map,  // Reference to the map object created before the scene
+          zoom: 7,  // Sets zoom level based on level of detail (LOD)
+          center: [35.5, -106]  // Sets center point of view using longitude,latitude
+        });
+
+        var mediansLyrToggle = dom.byId("mediansLyr");
+
+        on(mediansLyrToggle, "change", function(){
+          // When the checkbox is checked (true), set the layer's visibility to true
+          incomeLyr.visible =  mediansLyrToggle.checked;
+        });
+
+        view.on("layerview-create", function(event) {
+          if (event.layer.id === "medians") {
+            // Explore the properties of the housing layer's layer view here
+            console.log("Median Household Income added!", event.layerView);
+          }
+        });
+
+        incomeLyr.when(function() {
+          view.goTo(incomeLyr.fullExtent);
+        });
+
+
+      });
+    </script>
+    <!-- <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script> -->
   </body>
 </html>
