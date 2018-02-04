@@ -12,17 +12,18 @@ import "time"
 
 // HomeHandler is a default handler to serve up
 // a home page.
-func HomeHandler(c buffalo.Context) error {
+func AuthHandler(c buffalo.Context) error {
+	s := c.Session()
+	s.Set("access_token", nil)
 	return c.Redirect(302, login_url)
 }
 
-func AuthHandler(c buffalo.Context) error {
+func HomeHandler(c buffalo.Context) error {
 	s := c.Session()
-
 	var myClient = &http.Client{Timeout: 10 * time.Second}
-	var dat map[string]interface{}
 
-	for s.Get("access_token")==nil {
+	if s.Get("access_token")==nil {
+					var dat map[string]interface{}
 					resp, err := myClient.PostForm("https://login.salesforce.com/services/oauth2/token",
 				                                url.Values{"grant_type":{"authorization_code"},
 																								"code":{c.Param("code")},
@@ -34,10 +35,7 @@ func AuthHandler(c buffalo.Context) error {
 					}
 					defer resp.Body.Close()
 
-					err = json.NewDecoder(resp.Body).Decode(&dat)
-					if err != nil{
-						return err
-					}
+					json.NewDecoder(resp.Body).Decode(&dat)
 
 					if dat["access_token"] == nil {
 							return c.Redirect(302, login_url)
@@ -58,15 +56,15 @@ func AuthHandler(c buffalo.Context) error {
   req2.Header.Add("Authorization", "Bearer " + s.Get("access_token").(string))
   req2.Header.Add("X-PrettyPrint", "1")
 
-  resp1, err1 := myClient.Do(req1)
-  if err1!= nil{
-    panic(err1)
+  resp1, err := myClient.Do(req1)
+  if err!= nil{
+    panic(err)
   }
   defer resp1.Body.Close()
 
-  resp2, err2 := myClient.Do(req2)
-  if err2!= nil{
-    panic(err2)
+  resp2, err := myClient.Do(req2)
+  if err!= nil{
+    panic(err)
   }
   defer resp2.Body.Close()
 
