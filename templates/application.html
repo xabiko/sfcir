@@ -13,7 +13,6 @@
 
     <link href="https://js.arcgis.com/4.6/esri/css/main.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Bungee" rel="stylesheet">
-    <!-- <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet"> -->
 
   </head>
 
@@ -35,10 +34,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Help</a></li>
+            <li><a href="https://www.sfcir.org/">Back to SFCIR.org</a></li>
           </ul>
           <form class="navbar-form navbar-right">
             <input type="text" class="form-control" placeholder="Search...">
@@ -58,15 +54,12 @@
           </ul>
         </div>
 
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h1 class="page-header">Median Household Income</h1>
-          <%= yield %>
-        </div>
+        <%= yield %>
+
       </div>
     </div>
 
     <%= javascriptTag("application.js") %>
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFgQ8x_dFu4QagzAyJ5JOluHiGvu-R3gc&callback=initMap" async defer></script> -->
     <script src="https://js.arcgis.com/4.6/"></script>
 
     <script>
@@ -118,6 +111,5 @@
 
       });
     </script>
-    <!-- <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script> -->
   </body>
 </html>
