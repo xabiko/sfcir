@@ -64,7 +64,8 @@ func App() *buffalo.App {
 
 		app.GET("/auth", AuthHandler)
 		app.GET("/", HomeHandler)
-		
+		app.GET("/emails", EmailHandler)
+
 		app.ServeFiles("/assets", assetsBox)
 	}
 
