@@ -37,19 +37,7 @@
       </div>
     </nav>
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="active"><a href="http://localhost:3000">Overview</a></li>
-            <li><a href="http://localhost:3000/emails">Email Extraction</a></li>
-          </ul>
-        </div>
-
-        <%= yield %>
-
-      </div>
-    </div>
+    <%= yield %>
 
     <%= javascriptTag("application.js") %>
     <script src="https://js.arcgis.com/4.6/"></script>
