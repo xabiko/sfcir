@@ -7,73 +7,69 @@ import(
 )
 import "io/ioutil"
 import "encoding/json"
-import "strings"
+//import "strings"
 import "time"
 
-// HomeHandler is a default handler to serve up
-// a home page.
+func Getaccess(code string) (string, string) {
+		var dat map[string]interface{}
+		resp, err := http.PostForm("https://login.salesforce.com/services/oauth2/token",
+		                              url.Values{"grant_type":{"authorization_code"},
+																					"code":{code},
+																					"client_id":{client_id},
+		                                      "client_secret":{client_secret},
+		                                      "redirect_uri":{redirect_uri}})
+		if err != nil{
+			panic(err)
+		}
+		defer resp.Body.Close()
+
+		json.NewDecoder(resp.Body).Decode(&dat)
+
+		if dat["access_token"] == nil {
+				return "","" //Code expired or incorrect
+		}
+
+		return dat["access_token"].(string), dat["refresh_token"].(string)
+}
+
+func Makerequest(url string, acc string, client http.Client) string {
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Authorization", "Bearer " + acc)
+	req.Header.Add("X-PrettyPrint", "1")
+
+	resp, err := client.Do(req)
+	if err!= nil{
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
 func AuthHandler(c buffalo.Context) error {
-	s := c.Session()
-	s.Set("access_token", nil)
 	return c.Redirect(302, login_url)
 }
 
 func HomeHandler(c buffalo.Context) error {
 	s := c.Session()
-	var myClient = &http.Client{Timeout: 10 * time.Second}
-
-	if s.Get("access_token")==nil {
-					var dat map[string]interface{}
-					resp, err := myClient.PostForm("https://login.salesforce.com/services/oauth2/token",
-				                                url.Values{"grant_type":{"authorization_code"},
-																								"code":{c.Param("code")},
-																								"client_id":{client_id},
-				                                        "client_secret":{client_secret},
-				                                        "redirect_uri":{redirect_uri}})
-					if err != nil{
-						panic(err)
-					}
-					defer resp.Body.Close()
-
-					json.NewDecoder(resp.Body).Decode(&dat)
-
-					if dat["access_token"] == nil {
-							return c.Redirect(302, login_url)
-					}
-
-					acc := dat["access_token"].(string)
-
-					s.Set("access_token", acc[strings.Index(acc,"!")+1:])
+	http.DefaultClient.Timeout = 10 * time.Second
+	myClient := &http.Client{
+		Timeout : 10 * time.Second,
 	}
 
+	acc, ref := Getaccess(c.Param("code"))
+	if acc=="" {
+		return c.Redirect(302, login_url)
+	}
+	s.Set("access_token", acc)
+	s.Set("refresh_token", ref)
+
 	url1 := "https://na30.salesforce.com/services/data/v41.0/sobjects/Account"
-  req1, _ := http.NewRequest("GET", url1, nil)
-  req1.Header.Add("Authorization", "Bearer " + s.Get("access_token").(string))
-  req1.Header.Add("X-PrettyPrint", "1")
-
   url2 := "https://na30.salesforce.com/services/data/v41.0/sobjects/Account/0013600000CuqCdAAJ"
-  req2, _ := http.NewRequest("GET", url2, nil)
-  req2.Header.Add("Authorization", "Bearer " + s.Get("access_token").(string))
-  req2.Header.Add("X-PrettyPrint", "1")
 
-  resp1, err := myClient.Do(req1)
-  if err!= nil{
-    panic(err)
-  }
-  defer resp1.Body.Close()
-
-  resp2, err := myClient.Do(req2)
-  if err!= nil{
-    panic(err)
-  }
-  defer resp2.Body.Close()
-
-  body1, _ := ioutil.ReadAll(resp1.Body)
-  body2, _ := ioutil.ReadAll(resp2.Body)
-
-  c.Set("recent_items", string(body1))
-  c.Set("account_single", string(body2))
+  c.Set("recent_items", Makerequest(url1, s.Get("access_token").(string), *myClient))
+  c.Set("account_single", Makerequest(url2, s.Get("access_token").(string), *myClient))
 
   return c.Render(200, r.HTML("map.html"))
-
 }
