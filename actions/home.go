@@ -65,9 +65,9 @@ func HomeHandler(c buffalo.Context) error {
 	s.Set("access_token", acc)
 	s.Set("refresh_token", ref)
 
-	url1 := "https://na30.salesforce.com/services/data/v41.0/sobjects/Account"
+	url1 := "https://na30.salesforce.com/services/data/v41.0/sobjects/Contact"
   url2 := "https://na30.salesforce.com/services/data/v41.0/sobjects/Account/0013600000CuqCdAAJ"
-	url3 := "https://na30.salesforce.com/services/data/v41.0/query/?q=SELECT+Household_Email__c+from+Account"
+	url3 := "https://na30.salesforce.com/services/data/v41.0/query/?q=SELECT+Email+from+Contact"
 
   c.Set("recent_items", Makerequest(url1, s.Get("access_token").(string), *myClient))
   c.Set("account_single", Makerequest(url2, s.Get("access_token").(string), *myClient))
