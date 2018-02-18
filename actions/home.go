@@ -32,7 +32,7 @@ func Getaccess(code string) (string, string) {
 		return dat["access_token"].(string), dat["refresh_token"].(string)
 }
 
-func Makerequest(url string, acc string, client http.Client) string {
+func Makerequest(url, acc string, client http.Client) string {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("Authorization", "Bearer " + acc)
 	req.Header.Add("X-PrettyPrint", "1")
